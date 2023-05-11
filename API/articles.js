@@ -2,24 +2,6 @@ var express = require('express');
 var mysql = require('mysql2');
 var router = express.Router();
 
-var connection = mysql.createConnection({
-    host     : 'ec2-3-218-141-255.compute-1.amazonaws.com',
-    port     : '3306',
-    user     : '',
-    password : '',
-    database : ''
-});
-
-connection.connect(function(err){
-    
-    if(!err) {
-        console.log("Database is connected ... ");    
-    } else {
-        console.log("Error connecting database ... ");    
-        console.log(err);
-    }
-});
-
 router.get('/GetArticle', async function(req, res, next)
 {
     const articleID = req.body.articleID;
@@ -65,6 +47,17 @@ router.delete('/DeleteArticle', async function(req, res, next)
 
 async function QueryDatabase(sqlQuery)
 {
+    let connection = await ConnectToDatabase();
+    connection.connect(function(err){
+        
+        if(!err) {
+            console.log("Database is connected ... ");    
+        } else {
+            console.log("Error connecting database ... ");    
+            console.log(err);
+        }
+    });
+
     return new Promise((resolve, reject) =>
     {
         connection.query(sqlQuery, function(err, results)
@@ -73,8 +66,22 @@ async function QueryDatabase(sqlQuery)
             console.log(results);
             resolve(results);
         });
-
+        
+        connection.end();
     })
+}
+
+async function ConnectToDatabase()
+{
+    var connection = mysql.createConnection({
+        host     : 'capstone-database.chuvfybz3jvo.us-east-2.rds.amazonaws.com',
+        port     : '3306',
+        user     : 'admin',
+        password : 'capstone1',
+        database : 'capstone'
+    });
+    
+    return connection;
 }
 
 module.exports = router;
