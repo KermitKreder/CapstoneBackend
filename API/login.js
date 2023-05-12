@@ -327,8 +327,39 @@ router.put('/ForgotUserPassword', async function(req, res, next)
 
 router.get('/GetAllUsers', async function(req, res, next)
 {
+    //ERROR CODES:
+    // 0 - success
+    // 1 - SQL SELECT error
+    // 2 - No user with that username exists
+
+    var finalResponse = 
+    [
+        {
+            success: true,
+            errorCode: 0
+        }
+    ]
+
     let response = await QueryDatabase("SELECT * FROM Users;");
-    res.send(response).status(200).end();
+    if(response)
+    {
+        var returnArray = [];
+        var i = 0;
+
+        for(user of response)
+        {
+            returnArray[i] = {
+                username: user.username,
+                uid: user.uid
+            }
+            i += 1;
+        }
+
+        finalResponse[1] = returnArray;
+        finalResponse[0].success = true;
+        finalResponse[0].errorCode = 0;
+        res.send(finalResponse).status(200).end();
+    }
 });
 
 router.get('/GetUser', async function(req, res, next)
